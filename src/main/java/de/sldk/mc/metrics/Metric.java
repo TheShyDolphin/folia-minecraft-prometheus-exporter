@@ -10,7 +10,7 @@ public abstract class Metric {
 
     private final static String COMMON_PREFIX = "mc_";
 
-    private final Plugin plugin;
+    protected final Plugin plugin;
     private final Collector collector;
 
     private boolean enabled = false;

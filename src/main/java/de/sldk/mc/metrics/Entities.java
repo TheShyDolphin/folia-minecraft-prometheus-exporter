@@ -1,12 +1,15 @@
 package de.sldk.mc.metrics;
 
 import io.prometheus.client.Gauge;
+import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.plugin.Plugin;
 
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonMap;
@@ -46,8 +49,10 @@ public class Entities extends WorldMetric {
 
     @Override
     public void collect(World world) {
-        Map<EntityType, Long> mapEntityTypesToCounts = world.getEntities().stream()
-                .collect(Collectors.groupingBy(Entity::getType, Collectors.counting()));
+        CompletableFuture<List<EntityType>> worldEntities = new CompletableFuture<>();
+        Bukkit.getGlobalRegionScheduler().execute(plugin, () -> worldEntities.complete(world.getEntities()
+                .stream().map(Entity::getType).collect(Collectors.toList())));
+        Map<EntityType, Long> mapEntityTypesToCounts = worldEntities.join().stream().collect(Collectors.groupingBy(e -> e, Collectors.counting()));
 
         mapEntityTypesToCounts
                 .forEach((entityType, count) ->

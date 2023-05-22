@@ -1,12 +1,15 @@
 package de.sldk.mc.metrics;
 
 import io.prometheus.client.Gauge;
+import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Villager;
 import org.bukkit.plugin.Plugin;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -39,9 +42,18 @@ public class Villagers extends WorldMetric {
 
     @Override
     public void collect(World world) {
-        Map<VillagerGrouping, Long> mapVillagerGroupingToCount = world
-                .getEntitiesByClass(Villager.class).stream()
-                .collect(Collectors.groupingBy(VillagerGrouping::new, Collectors.counting()));
+        CompletableFuture<Collection<Villager>> worldVillagers = new CompletableFuture<>();
+        Bukkit.getGlobalRegionScheduler().execute(plugin, () -> worldVillagers.complete(world.getEntitiesByClass(Villager.class)));
+        Map<VillagerGrouping, Long> mapVillagerGroupingToCount = worldVillagers.join().stream()
+                .map(e -> {
+                    CompletableFuture<VillagerGrouping> grouping = new CompletableFuture<>();
+                    e.getScheduler().execute(plugin, () -> grouping.complete(new VillagerGrouping(e)), null, 0);
+                    return grouping;
+                })
+                .collect(Collectors.toList()) // Collecting forces all completable futures to execute
+                .stream()
+                .map(CompletableFuture::join)
+                .collect(Collectors.groupingBy(e -> e, Collectors.counting()));
 
         mapVillagerGroupingToCount.forEach((grouping, count) ->
                 VILLAGERS
