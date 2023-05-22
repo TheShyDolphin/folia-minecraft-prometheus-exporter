@@ -37,8 +37,8 @@ public class Tps extends Metric {
 
     private ScheduledTask startTask(Plugin plugin) {
         return Bukkit.getServer()
-                .getAsyncScheduler()
-                .runAtFixedRate(plugin, tpsCollector, 0, TpsCollector.POLL_INTERVAL * 20L, TimeUnit.SECONDS);
+                .getGlobalRegionScheduler()
+                .runAtFixedRate(plugin, tpsCollector, 1, TpsCollector.POLL_INTERVAL);
     }
 
     @Override
