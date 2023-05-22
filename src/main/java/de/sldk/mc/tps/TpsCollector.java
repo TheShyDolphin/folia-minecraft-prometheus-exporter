@@ -1,6 +1,9 @@
 package de.sldk.mc.tps;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+
 import java.util.LinkedList;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -9,7 +12,7 @@ import java.util.function.Supplier;
  *
  * @see <a href="https://github.com/TheLunarFrog/LagMeter">LagMeter</a>
  */
-public class TpsCollector implements Runnable {
+public class TpsCollector implements Consumer<ScheduledTask> {
 
     /**
      * Max amount of ticks that should happen per second
@@ -25,7 +28,7 @@ public class TpsCollector implements Runnable {
     static final int TPS_QUEUE_SIZE = 10;
 
     final private Supplier<Long> systemTimeSupplier;
-    private LinkedList<Float> tpsQueue = new LinkedList<>();
+    private final LinkedList<Float> tpsQueue = new LinkedList<>();
     private long lastPoll;
 
     public TpsCollector() {
@@ -38,7 +41,7 @@ public class TpsCollector implements Runnable {
     }
 
     @Override
-    public void run() {
+    public void accept(ScheduledTask scheduledTask) {
         final long now = systemTimeSupplier.get();
         final long timeSpent = now - this.lastPoll;
 

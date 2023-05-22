@@ -1,9 +1,12 @@
 package de.sldk.mc.metrics;
 
 import de.sldk.mc.tps.TpsCollector;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import io.prometheus.client.Gauge;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
+
+import java.util.concurrent.TimeUnit;
 
 public class Tps extends Metric {
 
@@ -12,9 +15,9 @@ public class Tps extends Metric {
             .help("Server TPS (ticks per second)")
             .create();
 
-    private int taskId;
+    private ScheduledTask taskId;
 
-    private TpsCollector tpsCollector = new TpsCollector();
+    private final TpsCollector tpsCollector = new TpsCollector();
 
     public Tps(Plugin plugin) {
         super(plugin, TPS);
@@ -29,13 +32,13 @@ public class Tps extends Metric {
     @Override
     public void disable() {
         super.disable();
-        Bukkit.getScheduler().cancelTask(taskId);
+        taskId.cancel();
     }
 
-    private int startTask(Plugin plugin) {
+    private ScheduledTask startTask(Plugin plugin) {
         return Bukkit.getServer()
-                .getScheduler()
-                .scheduleSyncRepeatingTask(plugin, tpsCollector, 0, TpsCollector.POLL_INTERVAL);
+                .getAsyncScheduler()
+                .runAtFixedRate(plugin, tpsCollector, 0, TpsCollector.POLL_INTERVAL * 20L, TimeUnit.SECONDS);
     }
 
     @Override

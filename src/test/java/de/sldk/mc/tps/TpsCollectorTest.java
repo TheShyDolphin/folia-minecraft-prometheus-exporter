@@ -29,10 +29,10 @@ class TpsCollectorTest {
 	void test_optimal_ticks() {
 
 		advanceSystemTime(TpsCollector.TICKS_PER_SECOND);
-		tpsCollector.run();
+		tpsCollector.accept(null);
 
 		advanceSystemTime(TpsCollector.TICKS_PER_SECOND);
-		tpsCollector.run();
+		tpsCollector.accept(null);
 
 		assertThat(tpsCollector.getAverageTPS()).isEqualTo(20);
 	}
@@ -41,10 +41,10 @@ class TpsCollectorTest {
 	void test_slow_ticks() {
 
 		advanceSystemTime(2667L);
-		tpsCollector.run();
+		tpsCollector.accept(null);
 
 		advanceSystemTime(2667L);
-		tpsCollector.run();
+		tpsCollector.accept(null);
 
 		assertThat(tpsCollector.getAverageTPS()).isCloseTo(15, Offset.offset(0.01f));
 	}
@@ -53,14 +53,13 @@ class TpsCollectorTest {
 	void test_invalid_ticks_should_be_ignored() {
 
 		advanceSystemTime(TpsCollector.TICKS_PER_SECOND);
-		tpsCollector.run();
+		tpsCollector.accept(null);
 
 		advanceSystemTime(0);
-		tpsCollector.run();
-
+		tpsCollector.accept(null);
 
 		advanceSystemTime(-1000);
-		tpsCollector.run();
+		tpsCollector.accept(null);
 
 		assertThat(tpsCollector.getAverageTPS()).isEqualTo(20);
 	}

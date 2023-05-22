@@ -3,10 +3,13 @@ package de.sldk.mc.exporter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import de.sldk.mc.MetricsServer;
 import de.sldk.mc.PrometheusExporter;
+import io.papermc.paper.threadedregions.scheduler.AsyncScheduler;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Counter;
 import io.prometheus.client.exporter.common.TextFormat;
@@ -34,7 +37,7 @@ public class PrometheusExporterTest {
 	@Mock
 	private Server mockServer;
 	@Mock
-	private BukkitScheduler mockScheduler;
+	private AsyncScheduler mockScheduler;
 
 	private int metricsServerPort;
 	private MetricsServer metricsServer;
@@ -80,8 +83,8 @@ public class PrometheusExporterTest {
 
 	private void mockBukkitApis() {
 		when(exporterMock.getServer()).thenReturn(mockServer);
-		when(mockServer.getScheduler()).thenReturn(mockScheduler);
-		when(mockScheduler.callSyncMethod(any(), any())).thenReturn(CompletableFuture.completedFuture(null));
+		when(mockServer.getAsyncScheduler()).thenReturn(mockScheduler);
+		when(mockScheduler.runNow(any(), any())).thenReturn(mock(ScheduledTask.class));
 	}
 
 	private void mockPrometheusCounter(String name, String help, int value) {

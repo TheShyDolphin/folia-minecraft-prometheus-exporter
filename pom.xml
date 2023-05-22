@@ -10,7 +10,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <spigot-api.version>1.16.5-R0.1-SNAPSHOT</spigot-api.version>
+        <folia-api.version>1.19.4-R0.1-SNAPSHOT</folia-api.version>
         <jetty.version>11.0.14</jetty.version>
         <prometheus-client.version>0.16.0</prometheus-client.version>
         <json-path.version>2.7.0</json-path.version>
@@ -28,16 +28,16 @@
 
     <repositories>
         <repository>
-            <id>spigot-repo</id>
-            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+            <id>papermc</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
     </repositories>
 
     <dependencies>
         <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
-            <version>${spigot-api.version}</version>
+            <groupId>dev.folia</groupId>
+            <artifactId>folia-api</artifactId>
+            <version>${folia-api.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -89,6 +89,19 @@
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
             <version>5.1.1</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.7</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.7</version>
             <scope>test</scope>
         </dependency>
 

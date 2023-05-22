@@ -1,5 +1,6 @@
 package de.sldk.mc;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.common.TextFormat;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,6 +10,7 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -35,13 +37,14 @@ public class MetricsController extends AbstractHandler {
          * Bukkit API calls have to be made from the main thread.
          * That's why we use the BukkitScheduler to retrieve the server stats.
          * */
-        Future<Object> future = exporter.getServer().getScheduler().callSyncMethod(exporter, () -> {
+        CountDownLatch latch = new CountDownLatch(1);
+        exporter.getServer().getAsyncScheduler().runNow(exporter, t -> {
             metricRegistry.collectMetrics();
-            return null;
+            latch.countDown();
         });
 
         try {
-            future.get();
+            latch.await();
 
             response.setStatus(HttpStatus.OK_200);
             response.setContentType(TextFormat.CONTENT_TYPE_004);
@@ -49,7 +52,7 @@ public class MetricsController extends AbstractHandler {
             TextFormat.write004(response.getWriter(), CollectorRegistry.defaultRegistry.metricFamilySamples());
 
             request.setHandled(true);
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
             exporter.getLogger().log(Level.WARNING, "Failed to read server statistic: " + e.getMessage());
             exporter.getLogger().log(Level.FINE, "Failed to read server statistic: ", e);
             response.sendError(HttpStatus.INTERNAL_SERVER_ERROR_500);
